@@ -1,4 +1,4 @@
-package tcplistner
+package main
 
 import (
 	"errors"
@@ -6,9 +6,9 @@ import (
 	"io"
 	"net"
 	"strings"
-)
 
-const inputFilePath = "messages.txt"
+	"github.com/ijaidev/httpfromtcp/internal/request"
+)
 
 func main() {
 	listner, err := net.Listen("tcp", "127.0.0.1:42069")
@@ -25,11 +25,14 @@ func main() {
 			panic(err)
 		}
 
-		linesChan := getLinesChannel(conn)
-		for line := range linesChan {
-			fmt.Printf("%s\n", line)
+		req, err := request.RequestFromReader(conn)
+		if err != nil {
+			panic(err)
 		}
-		fmt.Println("connection has been closed")
+		fmt.Println("Request line:")
+		fmt.Printf("- Method: %s\n", req.RequestLine.Method)
+		fmt.Printf("- Target: %s\n", req.RequestLine.RequestTarget)
+		fmt.Printf("- Version: %s\n", req.RequestLine.HttpVersion)
 	}
 
 }
@@ -42,7 +45,7 @@ func getLinesChannel(f io.ReadCloser) <-chan string {
 		defer close(linesChan)
 		currentLineContents := ""
 		for {
-			buffer := make([]byte, 8, 8)
+			buffer := make([]byte, 8)
 			n, err := f.Read(buffer)
 			if err != nil {
 				if currentLineContents != "" {
