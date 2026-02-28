@@ -1,11 +1,8 @@
 package main
 
 import (
-	"errors"
 	"fmt"
-	"io"
 	"net"
-	"strings"
 
 	"github.com/ijaidev/httpfromtcp/internal/request"
 )
@@ -43,42 +40,42 @@ func main() {
 
 }
 
-func getLinesChannel(f io.ReadCloser) <-chan string {
+// func getLinesChannel(f io.ReadCloser) <-chan string {
 
-	linesChan := make(chan string)
-	go func() {
-		defer f.Close()
-		defer close(linesChan)
-		currentLineContents := ""
-		for {
-			buffer := make([]byte, 8)
-			n, err := f.Read(buffer)
-			if err != nil {
-				if currentLineContents != "" {
-					linesChan <- currentLineContents
-					currentLineContents = ""
-				}
-				if errors.Is(err, io.EOF) {
-					break
-				}
-				fmt.Printf("error: %s\n", err.Error())
-				break
-			}
-			currentLineContents += string(buffer[:n])
-			parts := strings.Split(currentLineContents, "\n")
+// 	linesChan := make(chan string)
+// 	go func() {
+// 		defer f.Close()
+// 		defer close(linesChan)
+// 		currentLineContents := ""
+// 		for {
+// 			buffer := make([]byte, 8)
+// 			n, err := f.Read(buffer)
+// 			if err != nil {
+// 				if currentLineContents != "" {
+// 					linesChan <- currentLineContents
+// 					currentLineContents = ""
+// 				}
+// 				if errors.Is(err, io.EOF) {
+// 					break
+// 				}
+// 				fmt.Printf("error: %s\n", err.Error())
+// 				break
+// 			}
+// 			currentLineContents += string(buffer[:n])
+// 			parts := strings.Split(currentLineContents, "\n")
 
-			if len(parts) < 2 {
-				continue
-			}
+// 			if len(parts) < 2 {
+// 				continue
+// 			}
 
-			for i := 0; i < len(parts)-1; i++ {
-				linesChan <- parts[i]
-			}
+// 			for i := 0; i < len(parts)-1; i++ {
+// 				linesChan <- parts[i]
+// 			}
 
-			currentLineContents = parts[len(parts)-1]
-		}
-	}()
+// 			currentLineContents = parts[len(parts)-1]
+// 		}
+// 	}()
 
-	return linesChan
+// 	return linesChan
 
-}
+// }
